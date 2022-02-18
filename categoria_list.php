@@ -1,3 +1,11 @@
+<?php
+require 'conexao.php';
+require 'dao/CategoriaDao.php';
+
+$categoriaDao = new CategoriaDao($pdo);
+$categorias   = $categoriaDao->getAllCategorias();
+?>
+
 
 <!doctype html>
 <html ⚡>
@@ -19,18 +27,18 @@
       <img src="assets/images/bt-close.png" alt="Close Menu" width="24" height="24" />
     </a>
   </div>
-  <a href="dashboard.html"><img src="assets/images/menu-go-jumpers.png" alt="Welcome" width="200" height="43" /></a>
+  <a href="index.php"><img src="assets/images/menu-go-jumpers.png" alt="Welcome" width="200" height="43" /></a>
   <div>
     <ul>
-      <li><a href="categories.html" class="link-menu">Categorias</a></li>
-      <li><a href="products.html" class="link-menu">Produtos</a></li>
+      <li><a href="categoria_list.php" class="link-menu">Categorias</a></li>
+      <li><a href="produto_list.php" class="link-menu">Produtos</a></li>
     </ul>
   </div>
 </amp-sidebar>
 <header>
   <div class="go-menu">
     <a on="tap:sidebar.toggle">☰</a>
-    <a href="dashboard.html" class="link-logo"><img src="assets/images/go-logo.png" alt="Welcome" width="69" height="430" /></a>
+    <a href="index.php" class="link-logo"><img src="assets/images/go-logo.png" alt="Welcome" width="69" height="430" /></a>
   </div>
   <div class="right-box">
     <span class="go-title">Administration Panel</span>
@@ -41,7 +49,7 @@
   <main class="content">
     <div class="header-list-page">
       <h1 class="title">Categories</h1>
-      <a href="addCategory.html" class="btn-action">Add new Category</a>
+      <a href="categoria_form.php" class="btn-action">Add new Category</a>
     </div>
     <table class="data-grid">
       <tr class="data-row">
@@ -55,38 +63,29 @@
             <span class="data-grid-cell-content">Actions</span>
         </th>
       </tr>
+      <?php foreach($categorias as $categoria):?>
       <tr class="data-row">
-        <td class="data-grid-td">
-           <span class="data-grid-cell-content">Category 1 Name</span>
-        </td>
-      
-        <td class="data-grid-td">
-           <span class="data-grid-cell-content">Category 1 Code</span>
-        </td>
-      
-        <td class="data-grid-td">
-          <div class="actions">
-            <div class="action edit"><span>Edit</span></div>
-            <div class="action delete"><span>Delete</span></div>
-          </div>
-        </td>
+      <td class="data-grid-td">
+          <span class="data-grid-cell-content"><?php echo $categoria->getNome(); ?></span>
+      </td>
+    
+      <td class="data-grid-td">
+          <span class="data-grid-cell-content"><?php echo $categoria->getId(); ?></span>
+      </td>
+    
+      <td class="data-grid-td">
+        <div class="actions">
+          <div class="action edit"><a href="categoria_form.php?id=<?=$categoria->getId();?>"><span>Edit</span></div>
+          <div class="action delete"><span><a href="delete_categoria.php?id=<?=$categoria->getId();?>" onclick="return confirm('Tem certeza de deseja excluir esse registro?')">Delete</a></span></div>
+        </div>
+      </td>
       </tr>
-      <tr class="data-row">
-        <td class="data-grid-td">
-           <span class="data-grid-cell-content">Category 2 Name</span>
-        </td>
-      
-        <td class="data-grid-td">
-           <span class="data-grid-cell-content">Category 2 Code</span>
-        </td>
-      
-        <td class="data-grid-td">
-          <div class="actions">
-            <div class="action edit"><span>Edit</span></div>
-            <div class="action delete"><span>Delete</span></div>
-          </div>
-        </td>
-      </tr>
+      <tr>
+          <td style="text-align:center" >
+             
+          </td>
+      </tr>    
+      <?php endforeach; ?>
     </table>
   </main>
   <!-- Main Content -->
