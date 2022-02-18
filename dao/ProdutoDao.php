@@ -10,8 +10,9 @@ class ProdutoDao{
     }
 
     public function addProduto(Produto $produto){
-        $sql = $this->pdo->prepare("INSERT INTO produto (id, nome, descricao, preco, quantidade) VALUES(default, :nome, :descricao, :preco, :quantidade)");
+        $sql = $this->pdo->prepare("INSERT INTO produto (id, sku, nome, descricao, preco, quantidade) VALUES(default, :sku, :nome, :descricao, :preco, :quantidade)");
         
+        $sql->bindValue(':sku', $produto->getSku());
         $sql->bindValue(':nome', $produto->getNome());
         $sql->bindValue(':descricao', $produto->getDescricao());
         $sql->bindValue(':preco', $produto->getPreco());
@@ -36,6 +37,7 @@ class ProdutoDao{
                 $prod = new Produto;
 
                 $prod->setId($produto['id']);
+                $prod->setSku($produto['sku']);
                 $prod->setNome($produto['nome']);
                 $prod->setDescricao($produto['descricao']);
                 $prod->setPreco($produto['preco']);
@@ -50,7 +52,7 @@ class ProdutoDao{
 
     
     public function findProdutoById($id){
-        $sql = $this->pdo->prepare("SELECT * FROM Produto WHERE id= :id");
+        $sql = $this->pdo->prepare("SELECT * FROM produto WHERE id= :id");
 
         $sql->bindValue(':id', $id);
         $sql->execute();
@@ -61,11 +63,12 @@ class ProdutoDao{
             $prod  = new Produto;
 
             $prod->setId($produto['id']);
+            $prod->setSku($produto['sku']);
             $prod->setNome($produto['nome']);
             $prod->setDescricao($produto['descricao']);
             $prod->setPreco($produto['preco']);
             $prod->setQuantidade($produto['quantidade']);
-                        
+      
             return $prod;
 
         }else{
@@ -74,18 +77,22 @@ class ProdutoDao{
 
     }
     
-    public function updateProduto(Produto $Produto){
-        $sql = $this->pdo->prepare("UPDATE Produto SET nome = :nome WHERE id = :id");
+    public function updateProduto(Produto $produto){
+        $sql = $this->pdo->prepare("UPDATE produto SET sku = :sku, nome = :nome, descricao = :descricao, preco = :preco, quantidade = :quantidade WHERE id = :id");
 
-        $sql->bindValue(':id', $Produto->getId());
-        $sql->bindValue(':nome', $Produto->getNome());
+        $sql->bindValue(':id', $produto->getId());
+        $sql->bindValue(':sku', $produto->getSku());
+        $sql->bindValue(':nome', $produto->getNome());
+        $sql->bindValue(':descricao', $produto->getDescricao());
+        $sql->bindValue(':preco', $produto->getPreco());
+        $sql->bindValue(':quantidade', $produto->getQuantidade());
         $sql->execute();
         
         return true;
     }
 
     public function deleteProduto($id){
-        $sql = $this->pdo->prepare("DELETE FROM Produto WHERE id = :id ");
+        $sql = $this->pdo->prepare("DELETE FROM produto WHERE id = :id ");
 
         $sql->bindValue(':id', $id);
         $sql->execute();

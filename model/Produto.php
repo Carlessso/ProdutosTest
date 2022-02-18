@@ -2,6 +2,7 @@
 class Produto{
 
     private $id;
+    private $sku;
     private $nome;
     private $descricao;
     private $preco;
@@ -15,6 +16,16 @@ class Produto{
     // set the id
     public function setId($id){
         $this->id = $id;
+    }
+
+    //return the id
+    public function getSku(){
+        return $this->sku;
+    }
+
+    // set the id
+    public function setSku($sku){
+        $this->sku = $sku;
     }
 
     //get the name
