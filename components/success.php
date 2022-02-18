@@ -171,8 +171,8 @@ body{
 <a class="close" onclick="closeModal();" >&times;</a>
 <div class="page-body">
 <div class="head">  
-<h3 style="margin-top:5px;">Sucesso!</h3>
-<h4>Operação efetuada com sucesso!</h4>
+<h3 style="margin-top:5px;">Success!</h3>
+<h4>Operation done!</h4>
 </div>
 
 <h1 style="text-align:center;"><div class="checkmark-circle">
