@@ -1,6 +1,7 @@
 <?php
     require 'conexao.php';
     require 'dao/ProdutoDao.php';
+    require 'dao/LogDao.php';
     require 'dao/CategoriaDao.php';
     require 'dao/ProdutoCategoriaDao.php';
     
@@ -157,9 +158,15 @@
     if(!empty($sku))
     {
       try{
+        $logDao = new LogDao($pdo);
+
         if ($id){
           $produto = $produtoDao->findProdutoById($id);
           
+          $array_log_old = ['id' => $produto->getId(), 'sku' => $produto->getSku(), 'descricao' => $produto->getDescricao(), 'preco' => $produto->getPreco(), 'quantidade' => $produto->getQuantidade(), 'filepath' => $produto->getFilePath()];
+          
+          $old_register = json_encode($array_log_old);
+
           $produto->setSku($sku);
           $produto->setNome($nome);
           $produto->setDescricao($descricao);
@@ -174,6 +181,10 @@
   
           $produtoDao->updateProduto($produto);
   
+          $array_log_new = ['id' => $produto->getId(), 'sku' => $produto->getSku(), 'descricao' => $produto->getDescricao(), 'preco' => $produto->getPreco(), 'quantidade' => $produto->getQuantidade(), 'filepath' => $produto->getFilePath()];
+          
+          $new_register = json_encode($array_log_new);
+
           $produtoCategoriaDao->deleteByIdProduto($produto->getId());
   
           foreach($categorias as $idCategoria)
@@ -196,6 +207,7 @@
           echo("<script>setQuantidadeProduto('{$quantidade}');</script>");
           echo("<script>setCategorias('{$formatted_categorias}');</script>");
           
+          $logDao->log('produto', $old_register, $new_register);
         }else{
             $produto = new Produto;
   
@@ -235,18 +247,18 @@
             echo("<script>setDescricaoProduto('{$descricao}');</script>");
             echo("<script>setQuantidadeProduto('{$quantidade}');</script>");
             echo("<script>setCategorias('{$formatted_categorias}');</script>");
+
+
         }
         
         require 'components/success.php';
       }catch( PDOException $Exception ) {
-        $content = file_get_contents('components/error.php');
-
+        $content   = file_get_contents('components/error.php');
         $msg_error = $Exception->getMessage();
-        $content = str_replace('{$error}', $msg_error, $content);
+        $content   = str_replace('{$error}', $msg_error, $content);
 
         echo $content;
-    }
-     
+      }     
     }
 
 ?>

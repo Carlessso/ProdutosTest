@@ -23,4 +23,12 @@ CREATE TABLE produto_categoria(
     CONSTRAINT fk_categoria FOREIGN KEY (categoria_id) REFERENCES categoria(id) 
 );
 
+CREATE TABLE log(
+    id serial not null PRIMARY KEY,
+    logdate timestamp without time zone not null default now(),
+    tablename text not null,
+    old_record text not null,
+    new_record text not null
+);
+
 create unique index idx_unique_sku on produto(sku);
