@@ -1,9 +1,11 @@
 <?php
 require 'conexao.php';
 require 'dao/ProdutoDao.php';
+require 'dao/ProdutoCategoriaDao.php';
 
-$produtoDao = new ProdutoDao($pdo);
-$produtos   = $produtoDao->getAllProdutos();
+$produtoDao          = new ProdutoDao($pdo);
+$produtoCategoriaDao = new ProdutoCategoriaDao($pdo);
+$produtos            = $produtoDao->getAllProdutos();
 ?>
 
 
@@ -88,11 +90,18 @@ $produtos   = $produtoDao->getAllProdutos();
         </td>
 
         <td class="data-grid-td">
-           <span class="data-grid-cell-content"><?php echo $produto->getQuantidade(); ?></span>
+           <span class="data-grid-cell-content"><?php 
+           $categorias = $produtoCategoriaDao->getByProduto($produto->getId());
+           
+            foreach($categorias as $categoria){
+              echo $categoria->getNome()."<br>";
+            }
+
+           ?></span>
         </td>
 
         <td class="data-grid-td">
-           <span class="data-grid-cell-content">Category 1 <Br />Category 2</span>
+           <span class="data-grid-cell-content"><?php echo $produto->getQuantidade(); ?></span>
         </td>
       
         <td class="data-grid-td">

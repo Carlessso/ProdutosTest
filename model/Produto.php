@@ -7,6 +7,7 @@ class Produto{
     private $descricao;
     private $preco;
     private $quantidade;
+    private $file_path;
 
     //return the id
     public function getId(){
@@ -58,14 +59,23 @@ class Produto{
         $this->preco = $preco;
     }
 
-    //get the price
     public function getQuantidade(){
         return $this->quantidade;
     }
 
-    //set price
     public function setQuantidade($quantidade){
         $this->quantidade = $quantidade;
     }
+
+    //get the price
+    public function getFilePath(){
+        return $this->file_path;
+    }
+
+    //set price
+    public function setFilePath($path){
+        $this->file_path = $path;
+    }
+    
 
 }

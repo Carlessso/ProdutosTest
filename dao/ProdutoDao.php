@@ -10,13 +10,14 @@ class ProdutoDao{
     }
 
     public function addProduto(Produto $produto){
-        $sql = $this->pdo->prepare("INSERT INTO produto (id, sku, nome, descricao, preco, quantidade) VALUES(default, :sku, :nome, :descricao, :preco, :quantidade)");
-        
+        $sql = $this->pdo->prepare("INSERT INTO produto (id, sku, nome, descricao, preco, quantidade, file_path) VALUES(default, :sku, :nome, :descricao, :preco, :quantidade, :file_path)");
+
         $sql->bindValue(':sku', $produto->getSku());
         $sql->bindValue(':nome', $produto->getNome());
         $sql->bindValue(':descricao', $produto->getDescricao());
         $sql->bindValue(':preco', $produto->getPreco());
         $sql->bindValue(':quantidade', $produto->getQuantidade());
+        $sql->bindValue(':file_path', $produto->getFilePath());
         $sql->execute();
 
         $produto->setId($this->pdo->lastInsertId());
@@ -42,6 +43,7 @@ class ProdutoDao{
                 $prod->setDescricao($produto['descricao']);
                 $prod->setPreco($produto['preco']);
                 $prod->setQuantidade($produto['quantidade']);
+                $prod->setFilePath($produto['file_path']);
 
                 $produtos[] = $prod;
             }
@@ -68,6 +70,7 @@ class ProdutoDao{
             $prod->setDescricao($produto['descricao']);
             $prod->setPreco($produto['preco']);
             $prod->setQuantidade($produto['quantidade']);
+            $prod->setFilePath($produto['file_path']);
       
             return $prod;
 
@@ -78,7 +81,7 @@ class ProdutoDao{
     }
     
     public function updateProduto(Produto $produto){
-        $sql = $this->pdo->prepare("UPDATE produto SET sku = :sku, nome = :nome, descricao = :descricao, preco = :preco, quantidade = :quantidade WHERE id = :id");
+        $sql = $this->pdo->prepare("UPDATE produto SET sku = :sku, nome = :nome, descricao = :descricao, preco = :preco, quantidade = :quantidade, file_path = :file_path WHERE id = :id");
 
         $sql->bindValue(':id', $produto->getId());
         $sql->bindValue(':sku', $produto->getSku());
@@ -86,6 +89,7 @@ class ProdutoDao{
         $sql->bindValue(':descricao', $produto->getDescricao());
         $sql->bindValue(':preco', $produto->getPreco());
         $sql->bindValue(':quantidade', $produto->getQuantidade());
+        $sql->bindValue(':file_path', $produto->getFilePath());
         $sql->execute();
         
         return true;

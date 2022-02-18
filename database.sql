@@ -5,6 +5,7 @@ CREATE TABLE produto(
     sku text not null,
     nome text not null,
     descricao text,
+    file_path text,
     preco numeric(10,3) not null,
     quantidade numeric(10,3) not null
 );

@@ -45,3 +45,10 @@ function setDescricaoProduto(descricao){
 
     field_descricao.value = descricao;
 }
+
+function setCategorias(categorias){
+    $('#category option:selected').prop("selected", false);
+    $.each(categorias.split(","), function(i,e){
+        $("#category option[value='" + e + "']").prop("selected", true);
+    });
+}

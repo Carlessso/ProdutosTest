@@ -1,12 +1,32 @@
 <?php
     require 'conexao.php';
     require 'dao/ProdutoDao.php';
+    require 'dao/CategoriaDao.php';
+    require 'dao/ProdutoCategoriaDao.php';
     
     //caso nao tenha id no get, tenta pelo post
     $id = filter_input(INPUT_GET, 'id')??filter_input(INPUT_POST, 'id');
   
-    $produtoDao = new ProdutoDao($pdo);
-    $produto    = $produtoDao->findProdutoById($id);
+    $produtoDao          = new ProdutoDao($pdo);
+    $categoriaDao        = new CategoriaDao($pdo);
+    $produtoCategoriaDao = new ProdutoCategoriaDao($pdo);
+    
+    $produto           = $produtoDao->findProdutoById($id);
+    $categorias        = $categoriaDao->getAllCategorias();
+    $categoriasProduto = $produtoCategoriaDao->getByProduto($id);
+    
+    $categorias_selecionadas = [];
+
+    foreach($categoriasProduto as $categoriaSelecionada){
+      $categorias_selecionadas[] = $categoriaSelecionada->getId();
+    }
+
+    if(empty($categorias)){
+      echo "<script>alert('É necessário cadastrar no mínimo uma categoria primeiro!');
+      window.location.href = 'categoria_form.php'</script>";
+      
+      exit;
+    }
 
 ?>
 
@@ -20,6 +40,7 @@
 <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,800" rel="stylesheet">
 <meta name="viewport" content="width=device-width,minimum-scale=1">
 <script src="js/produtos.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" type="text/javascript"></script>
 <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
 <script async src="https://cdn.ampproject.org/v0.js"></script>
 <script async custom-element="amp-fit-text" src="https://cdn.ampproject.org/v0/amp-fit-text-0.1.js"></script>
@@ -53,7 +74,7 @@
   <main class="content">
     <h1 class="title new-item">New Product</h1>
     
-    <form method="POST" action="produto_form.php">
+    <form method="POST" action="produto_form.php" enctype="multipart/form-data">
       <div class="input-field">
         <label for="id" class="label">Product Id</label>
         <input value="<?php if ($id) {echo $produto->getId();}?>" readonly="readonly" type="text" id="id"  name="id" class="input-text" /> 
@@ -67,6 +88,10 @@
         <input value="<?php if ($id) {echo $produto->getNome();}?>" type="text" id="name" name="nome" class="input-text" /> 
       </div>
       <div class="input-field">
+      <label class="label" for="filepath">Choose a product picture:</label>
+      <input class="input-text" type="file" id="filepath" name="filepath" accept="image/png, image/jpeg"> 
+      </div>
+      <div class="input-field">
         <label for="price" class="label">Price</label>
         <input value="<?php if ($id) {echo $produto->getPreco();}?>" type="text" id="price" name="preco" class="input-text" /> 
       </div>
@@ -76,11 +101,10 @@
       </div>
       <div class="input-field">
         <label for="category" class="label">Categories</label>
-        <select multiple id="category" class="input-text" name="categorias">
-          <option>Category 1</option>
-          <option>Category 2</option>
-          <option>Category 3</option>
-          <option>Category 4</option>
+        <select required="required" multiple id="category" class="input-text" name="categorias[]">
+        <?php foreach($categorias as $categoria):?>
+          <option <?php if(in_array($categoria->getId(), $categorias_selecionadas)){echo "selected";}?> value="<?php echo $categoria->getId();?>"><?php echo $categoria->getNome();?></option>
+        <?php endforeach; ?>
         </select>
       </div>
       <div class="input-field">
@@ -117,6 +141,16 @@
     $descricao  = filter_input(INPUT_POST,'descricao');
     $preco      = filter_input(INPUT_POST,'preco');
     $quantidade = filter_input(INPUT_POST,'quantidade');
+    $categorias = $_POST['categorias']??[];
+
+    if(!empty($_FILES['filepath'])){
+      $uploaddir = '/var/www/html/ProdutosTest/files/';
+      $uploadfile = $uploaddir . basename($_FILES['filepath']['name']);
+
+      if (!move_uploaded_file($_FILES['filepath']['tmp_name'], $uploadfile)) {
+        echo "Erro ao importar arquivo!";
+      }
+    }    
 
     if(!empty($sku))
     {
@@ -129,7 +163,27 @@
         $produto->setPreco($preco);
         $produto->setQuantidade($quantidade);
 
+        if(!empty($_FILES['filepath'])){
+          $produto->setFilePath('files/'.basename($_FILES['filepath']['name']));
+        }else{
+          $produto->setFilePath($produto->getFilePath());          
+        }
+
         $produtoDao->updateProduto($produto);
+
+        $produtoCategoriaDao->deleteByIdProduto($produto->getId());
+
+        foreach($categorias as $idCategoria)
+        {
+          $produto_categoria = new ProdutoCategoria;
+
+          $produto_categoria->setIdProduto($produto->getId());
+          $produto_categoria->setIdCategoria($idCategoria);
+
+          $produtoCategoriaDao->addProdutoCategoria($produto_categoria);
+        }
+        
+        $formatted_categorias = implode(',', $categorias);
 
         echo("<script>setIdProduto({$id});</script>");
         echo("<script>setNomeProduto('{$nome}');</script>");
@@ -137,6 +191,7 @@
         echo("<script>setPrecoProduto('{$preco}');</script>");
         echo("<script>setDescricaoProduto('{$descricao}');</script>");
         echo("<script>setQuantidadeProduto('{$quantidade}');</script>");
+        echo("<script>setCategorias('{$formatted_categorias}');</script>");
         
       }else{
           $produto = new Produto;
@@ -147,9 +202,27 @@
           $produto->setPreco($preco);
           $produto->setQuantidade($quantidade);
 
+          if(!empty($_FILES['filepath'])){
+            $produto->setFilePath('files/'.basename($_FILES['filepath']['name']));
+          }
+
           $produtoDao->addProduto($produto);
 
           $idProduto = $produto->getId();
+
+          $produtoCategoriaDao->deleteByIdProduto($idProduto);
+
+          foreach($categorias as $idCategoria)
+          {
+            $produto_categoria = new ProdutoCategoria;
+
+            $produto_categoria->setIdProduto($idProduto);
+            $produto_categoria->setIdCategoria($idCategoria);
+
+            $produtoCategoriaDao->addProdutoCategoria($produto_categoria);
+          }
+
+          $formatted_categorias = implode(',', $categorias);
 
           //seta o valor no campo para novo update
           echo("<script>setIdProduto({$idProduto});</script>");
@@ -157,7 +230,8 @@
           echo("<script>setSkuProduto('{$sku}');</script>");
           echo("<script>setPrecoProduto('{$preco}');</script>");
           echo("<script>setDescricaoProduto('{$descricao}');</script>");
-          echo("<script>setQuantidadeProduto('{$quantidade}');</script>");     
+          echo("<script>setQuantidadeProduto('{$quantidade}');</script>");
+          echo("<script>setCategorias('{$formatted_categorias}');</script>");
       }
       
       require 'components/success.php';
