@@ -52,3 +52,7 @@ function setCategorias(categorias){
         $("#category option[value='" + e + "']").prop("selected", true);
     });
 }
+
+$('.button').bind('click', function() {
+	$('.modal').addClass('hide');
+});

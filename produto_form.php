@@ -39,8 +39,8 @@
 <link  rel="stylesheet" type="text/css"  media="all" href="assets/css/style.css" />
 <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,800" rel="stylesheet">
 <meta name="viewport" content="width=device-width,minimum-scale=1">
-<script src="js/produtos.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" type="text/javascript"></script>
+<script src="js/produtos.js"></script>
 <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style><noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
 <script async src="https://cdn.ampproject.org/v0.js"></script>
 <script async custom-element="amp-fit-text" src="https://cdn.ampproject.org/v0/amp-fit-text-0.1.js"></script>
@@ -144,97 +144,109 @@
     $categorias = $_POST['categorias']??[];
 
     if(!empty($_FILES['filepath'])){
+      $filechange = TRUE;
+
       $uploaddir = '/var/www/html/ProdutosTest/files/';
       $uploadfile = $uploaddir . basename($_FILES['filepath']['name']);
 
       if (!move_uploaded_file($_FILES['filepath']['tmp_name'], $uploadfile)) {
-        echo "Erro ao importar arquivo!";
+        $filechange = FALSE;
       }
     }    
 
     if(!empty($sku))
     {
-      if ($id){
-        $produto = $produtoDao->findProdutoById($id);
-        
-        $produto->setSku($sku);
-        $produto->setNome($nome);
-        $produto->setDescricao($descricao);
-        $produto->setPreco($preco);
-        $produto->setQuantidade($quantidade);
-
-        if(!empty($_FILES['filepath'])){
-          $produto->setFilePath('files/'.basename($_FILES['filepath']['name']));
-        }else{
-          $produto->setFilePath($produto->getFilePath());          
-        }
-
-        $produtoDao->updateProduto($produto);
-
-        $produtoCategoriaDao->deleteByIdProduto($produto->getId());
-
-        foreach($categorias as $idCategoria)
-        {
-          $produto_categoria = new ProdutoCategoria;
-
-          $produto_categoria->setIdProduto($produto->getId());
-          $produto_categoria->setIdCategoria($idCategoria);
-
-          $produtoCategoriaDao->addProdutoCategoria($produto_categoria);
-        }
-        
-        $formatted_categorias = implode(',', $categorias);
-
-        echo("<script>setIdProduto({$id});</script>");
-        echo("<script>setNomeProduto('{$nome}');</script>");
-        echo("<script>setSkuProduto('{$sku}');</script>");
-        echo("<script>setPrecoProduto('{$preco}');</script>");
-        echo("<script>setDescricaoProduto('{$descricao}');</script>");
-        echo("<script>setQuantidadeProduto('{$quantidade}');</script>");
-        echo("<script>setCategorias('{$formatted_categorias}');</script>");
-        
-      }else{
-          $produto = new Produto;
-
+      try{
+        if ($id){
+          $produto = $produtoDao->findProdutoById($id);
+          
           $produto->setSku($sku);
           $produto->setNome($nome);
           $produto->setDescricao($descricao);
           $produto->setPreco($preco);
           $produto->setQuantidade($quantidade);
-
-          if(!empty($_FILES['filepath'])){
+  
+          if($filechange){
             $produto->setFilePath('files/'.basename($_FILES['filepath']['name']));
+          }else{
+            $produto->setFilePath($produto->getFilePath());          
           }
-
-          $produtoDao->addProduto($produto);
-
-          $idProduto = $produto->getId();
-
-          $produtoCategoriaDao->deleteByIdProduto($idProduto);
-
+  
+          $produtoDao->updateProduto($produto);
+  
+          $produtoCategoriaDao->deleteByIdProduto($produto->getId());
+  
           foreach($categorias as $idCategoria)
           {
             $produto_categoria = new ProdutoCategoria;
-
-            $produto_categoria->setIdProduto($idProduto);
+  
+            $produto_categoria->setIdProduto($produto->getId());
             $produto_categoria->setIdCategoria($idCategoria);
-
+  
             $produtoCategoriaDao->addProdutoCategoria($produto_categoria);
           }
-
+          
           $formatted_categorias = implode(',', $categorias);
-
-          //seta o valor no campo para novo update
-          echo("<script>setIdProduto({$idProduto});</script>");
+  
+          echo("<script>setIdProduto({$id});</script>");
           echo("<script>setNomeProduto('{$nome}');</script>");
           echo("<script>setSkuProduto('{$sku}');</script>");
           echo("<script>setPrecoProduto('{$preco}');</script>");
           echo("<script>setDescricaoProduto('{$descricao}');</script>");
           echo("<script>setQuantidadeProduto('{$quantidade}');</script>");
           echo("<script>setCategorias('{$formatted_categorias}');</script>");
-      }
-      
-      require 'components/success.php';
+          
+        }else{
+            $produto = new Produto;
+  
+            $produto->setSku($sku);
+            $produto->setNome($nome);
+            $produto->setDescricao($descricao);
+            $produto->setPreco($preco);
+            $produto->setQuantidade($quantidade);
+  
+            if(!empty($_FILES['filepath'])){
+              $produto->setFilePath('files/'.basename($_FILES['filepath']['name']));
+            }
+  
+            $produtoDao->addProduto($produto);
+  
+            $idProduto = $produto->getId();
+  
+            $produtoCategoriaDao->deleteByIdProduto($idProduto);
+  
+            foreach($categorias as $idCategoria)
+            {
+              $produto_categoria = new ProdutoCategoria;
+  
+              $produto_categoria->setIdProduto($idProduto);
+              $produto_categoria->setIdCategoria($idCategoria);
+  
+              $produtoCategoriaDao->addProdutoCategoria($produto_categoria);
+            }
+  
+            $formatted_categorias = implode(',', $categorias);
+  
+            //seta o valor no campo para novo update
+            echo("<script>setIdProduto({$idProduto});</script>");
+            echo("<script>setNomeProduto('{$nome}');</script>");
+            echo("<script>setSkuProduto('{$sku}');</script>");
+            echo("<script>setPrecoProduto('{$preco}');</script>");
+            echo("<script>setDescricaoProduto('{$descricao}');</script>");
+            echo("<script>setQuantidadeProduto('{$quantidade}');</script>");
+            echo("<script>setCategorias('{$formatted_categorias}');</script>");
+        }
+        
+        require 'components/success.php';
+      }catch( PDOException $Exception ) {
+        $content = file_get_contents('components/error.php');
+
+        $msg_error = $Exception->getMessage();
+        $content = str_replace('{$error}', $msg_error, $content);
+
+        echo $content;
+    }
+     
     }
 
 ?>
